@@ -1,10 +1,19 @@
 # Repo-local tooling
 .angular/
 .cursor/
+
 # Node / frontend
 frontend/node_modules
 frontend/dist
+/frontend/build/
 frontend/.angular
+
+# Build / IDE / node
+/.gradle/
+build/
+/**/build/
+target/
+/out/
 
 # Angular cache
 frontend/.angular/cache
@@ -19,6 +28,7 @@ backend/build
 .idea
 .vscode
 *.iml
+.DS_Store
 
 # OS artifacts
 .DS_Store
@@ -37,3 +47,4 @@ backend/api/spy.log
 # Internal-only
 internal/
 backend/hidden-tests/
+.github/copilot-instructions.md
