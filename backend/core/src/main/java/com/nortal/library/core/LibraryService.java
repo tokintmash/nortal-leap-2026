@@ -53,11 +53,16 @@ public class LibraryService {
     if (book.isEmpty()) {
       return ResultWithNext.failure();
     }
-    // TODO: add return constraints
-    // no memberId
-    // if (book.get().getLoanedTo() != memberId) {
-    //   return ResultWithNext.failure();
-    // }
+
+    String borrowerId = book.get().getLoanedTo();
+
+    // TODO: add return constraint message
+    if (!borrowerId.equals(memberId)) {
+      System.out.println(ANSI_YELLOW + "IDs not the same." + ANSI_RESET + book.get().getLoanedTo() + ", memberId: " + memberId);
+      return ResultWithNext.failure();
+    } else if (borrowerId.equals(memberId)) {
+      System.out.println(ANSI_YELLOW + "IDs are same." + ANSI_RESET + book.get().getLoanedTo() + ", memberId: " + memberId);
+    }
 
     System.out.println(ANSI_YELLOW + "Loaned to (from returnBOok): " + ANSI_RESET + book.get().getLoanedTo());
     System.out.println(ANSI_YELLOW + "Member (from returnBOok): " + ANSI_RESET + memberId);
