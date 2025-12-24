@@ -26,6 +26,9 @@ public class LibraryService {
     if (book.isEmpty()) {
       return Result.failure("BOOK_NOT_FOUND");
     }
+    if (book.get().getLoanedTo() != null) {
+      return Result.failure("BOOK_LOANED");
+    }
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
     }
@@ -34,6 +37,7 @@ public class LibraryService {
     }
     Book entity = book.get();
     entity.setLoanedTo(memberId);
+    System.out.println("borrowed by " + memberId);
     entity.setDueDate(LocalDate.now().plusDays(DEFAULT_LOAN_DAYS));
     bookRepository.save(entity);
     return Result.success();
