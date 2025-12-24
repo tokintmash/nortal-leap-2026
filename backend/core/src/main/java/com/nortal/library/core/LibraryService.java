@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 public class LibraryService {
+  public static final String ANSI_RESET = "\u001B[0m";
+  public static final String ANSI_YELLOW = "\u001B[33m";
+
   private static final int MAX_LOANS = 5;
   private static final int DEFAULT_LOAN_DAYS = 14;
 
@@ -42,22 +46,33 @@ public class LibraryService {
     bookRepository.save(entity);
     return Result.success();
   }
-
+  
   public ResultWithNext returnBook(String bookId, String memberId) {
+    System.out.println(ANSI_YELLOW + "returnBook called for bookId: " + ANSI_RESET + bookId + ", memberId: " + memberId);
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
       return ResultWithNext.failure();
     }
+    // TODO: add return constraints
+    // no memberId
+    // if (book.get().getLoanedTo() != memberId) {
+    //   return ResultWithNext.failure();
+    // }
+
+    System.out.println(ANSI_YELLOW + "Loaned to (from returnBOok): " + ANSI_RESET + book.get().getLoanedTo());
+    System.out.println(ANSI_YELLOW + "Member (from returnBOok): " + ANSI_RESET + memberId);
+    
 
     Book entity = book.get();
     entity.setLoanedTo(null);
     entity.setDueDate(null);
     String nextMember =
         entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
-    bookRepository.save(entity);
-    return ResultWithNext.success(nextMember);
+        System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
+        bookRepository.save(entity);
+        return ResultWithNext.success(nextMember);
   }
-
+      
   public Result reserveBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
@@ -66,9 +81,10 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
     }
-
+      
     Book entity = book.get();
     entity.getReservationQueue().add(memberId);
+    System.out.println("Reservation queue from reserve: " + entity.getReservationQueue());
     bookRepository.save(entity);
     return Result.success();
   }
@@ -259,6 +275,16 @@ public class LibraryService {
       return new ResultWithNext(false, null);
     }
   }
+
+  //   public record ResultWithNext(boolean ok, String nextMemberId, String reason) {
+  //   public static ResultWithNext success(String nextMemberId) {
+  //     return new ResultWithNext(true, nextMemberId, null);
+  //   }
+
+  //   public static ResultWithNext failure(String reason) {
+  //     return new ResultWithNext(false, null, reason);
+  //   }
+  // }
 
   public record MemberSummary(
       boolean ok, String reason, List<Book> loans, List<ReservationPosition> reservations) {}
