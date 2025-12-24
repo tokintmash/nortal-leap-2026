@@ -48,3 +48,4 @@ backend/api/spy.log
 internal/
 backend/hidden-tests/
 .github/copilot-instructions.md
+AGENT.md
