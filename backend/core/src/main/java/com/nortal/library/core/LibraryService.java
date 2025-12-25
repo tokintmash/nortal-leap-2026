@@ -39,9 +39,19 @@ public class LibraryService {
     if (!canMemberBorrow(memberId)) {
       return Result.failure("BORROW_LIMIT");
     }
+
     Book entity = book.get();
+        
+    if (!entity.getReservationQueue().isEmpty() && !entity.getReservationQueue().get(0).equals(memberId)) {
+      System.out.println(ANSI_YELLOW + "queue is not empty");
+      System.out.println(ANSI_YELLOW + "member is not first in queue" + entity.getReservationQueue().get(0));
+      return Result.failure("BOOK_RESERVED");
+    } else if (!entity.getReservationQueue().isEmpty() && entity.getReservationQueue().get(0).equals(memberId)) {
+      System.out.println(ANSI_YELLOW + "first in queue, removing from queue:" + entity.getReservationQueue().get(0));
+      cancelReservation(bookId, memberId);
+    }
+        
     entity.setLoanedTo(memberId);
-    System.out.println("borrowed by " + memberId);
     entity.setDueDate(LocalDate.now().plusDays(DEFAULT_LOAN_DAYS));
     bookRepository.save(entity);
     return Result.success();
@@ -67,7 +77,6 @@ public class LibraryService {
     System.out.println(ANSI_YELLOW + "Loaned to (from returnBOok): " + ANSI_RESET + book.get().getLoanedTo());
     System.out.println(ANSI_YELLOW + "Member (from returnBOok): " + ANSI_RESET + memberId);
     
-
     Book entity = book.get();
     entity.setLoanedTo(null);
     entity.setDueDate(null);
@@ -86,7 +95,7 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
     }
-      
+    
     Book entity = book.get();
     entity.getReservationQueue().add(memberId);
     System.out.println("Reservation queue from reserve: " + entity.getReservationQueue());
