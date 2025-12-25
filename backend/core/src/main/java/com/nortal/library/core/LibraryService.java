@@ -94,6 +94,7 @@ public class LibraryService {
         System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
         bookRepository.save(entity);
         System.out.println(ANSI_YELLOW + "nextMember from return: " + ANSI_RESET + nextMember);
+        borrowBook(bookId, nextMember);
         return ResultWithNext.success(nextMember);
   }
       
