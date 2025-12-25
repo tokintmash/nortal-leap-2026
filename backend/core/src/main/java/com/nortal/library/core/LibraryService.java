@@ -97,8 +97,26 @@ public class LibraryService {
     }
     
     Book entity = book.get();
+    List<String> queue = entity.getReservationQueue();
+
+    // TODO: add correct message for rejecting borrower's reserve
+    if (!queue.isEmpty() && !queue.contains(memberId)) {
+      System.out.println(ANSI_YELLOW + "queue not empty, !contains member: " + ANSI_RESET + entity.getReservationQueue());
+      entity.getReservationQueue().add(memberId);
+    } else if (!queue.isEmpty() && entity.getReservationQueue().get(0).equals(memberId)) {
+      System.out.println(ANSI_YELLOW + "queue empty, member first in queue, calling borrowBook" + ANSI_RESET + entity.getReservationQueue());
+      return borrowBook(bookId, memberId);
+    }
+    
+    if (queue.isEmpty() && book.get().getLoanedTo() != null && !book.get().getLoanedTo().equals(memberId)) {
+    System.out.println(ANSI_YELLOW + "queue empty, not loaned to member: " + ANSI_RESET + entity.getReservationQueue());
     entity.getReservationQueue().add(memberId);
-    System.out.println("Reservation queue from reserve: " + entity.getReservationQueue());
+    } else if (queue.isEmpty()) {
+      System.out.println(ANSI_YELLOW + "queue empty, calling borrowBook" + ANSI_RESET + entity.getReservationQueue());
+      return borrowBook(bookId, memberId);
+    }
+
+    System.out.println(ANSI_YELLOW + "Reservation queue from reserve: " + ANSI_RESET + entity.getReservationQueue());
     bookRepository.save(entity);
     return Result.success();
   }
