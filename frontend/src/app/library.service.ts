@@ -45,12 +45,7 @@ export class LibraryApiService {
   }
 
   async returnBook(bookId: string, memberId: string): Promise<ActionResult> {
-    // const payload: { bookId: string; memberId?: string } = { bookId };
     const payload: { bookId: string; memberId: string } = { bookId, memberId };
-    // if (memberId) {
-    //   payload.memberId = memberId;
-    // }
-    console.log(payload)
     return this.post('/return', payload);
   }
 

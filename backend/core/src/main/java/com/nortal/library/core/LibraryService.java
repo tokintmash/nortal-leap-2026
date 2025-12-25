@@ -56,6 +56,13 @@ public class LibraryService {
     bookRepository.save(entity);
     return Result.success();
   }
+
+  void removeMemberFromAllQueues(String memberId) {
+    bookRepository.findAll().forEach(book -> {
+      book.getReservationQueue().remove(memberId);
+      bookRepository.save(book);
+    });
+  }
   
   public ResultWithNext returnBook(String bookId, String memberId) {
     System.out.println(ANSI_YELLOW + "returnBook called for bookId: " + ANSI_RESET + bookId + ", memberId: " + memberId);
@@ -74,17 +81,23 @@ public class LibraryService {
       System.out.println(ANSI_YELLOW + "IDs are same." + ANSI_RESET + book.get().getLoanedTo() + ", memberId: " + memberId);
     }
 
-    System.out.println(ANSI_YELLOW + "Loaned to (from returnBOok): " + ANSI_RESET + book.get().getLoanedTo());
-    System.out.println(ANSI_YELLOW + "Member (from returnBOok): " + ANSI_RESET + memberId);
+    // System.out.println(ANSI_YELLOW + "Loaned to (from returnBOok): " + ANSI_RESET + book.get().getLoanedTo());
+    // System.out.println(ANSI_YELLOW + "Member (from returnBOok): " + ANSI_RESET + memberId);
     
+    // memberRepository.existsById(memberId)
+
     Book entity = book.get();
     entity.setLoanedTo(null);
     entity.setDueDate(null);
     String nextMember =
         entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
-        System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
-        bookRepository.save(entity);
-        return ResultWithNext.success(nextMember);
+    System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
+    bookRepository.save(entity);
+    System.out.println(ANSI_YELLOW + "nextMember from return: " + ANSI_RESET + nextMember);
+    if (!entity.getReservationQueue().isEmpty()) {
+      borrowBook(bookId, nextMember);
+    }
+    return ResultWithNext.success(nextMember);
   }
       
   public Result reserveBook(String bookId, String memberId) {
@@ -284,7 +297,9 @@ public class LibraryService {
     if (existing.isEmpty()) {
       return Result.failure("MEMBER_NOT_FOUND");
     }
+
     memberRepository.delete(existing.get());
+    removeMemberFromAllQueues(id);
     return Result.success();
   }
 
