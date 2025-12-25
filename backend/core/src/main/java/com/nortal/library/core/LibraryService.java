@@ -91,11 +91,13 @@ public class LibraryService {
     entity.setDueDate(null);
     String nextMember =
         entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
-        System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
-        bookRepository.save(entity);
-        System.out.println(ANSI_YELLOW + "nextMember from return: " + ANSI_RESET + nextMember);
-        borrowBook(bookId, nextMember);
-        return ResultWithNext.success(nextMember);
+    System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
+    bookRepository.save(entity);
+    System.out.println(ANSI_YELLOW + "nextMember from return: " + ANSI_RESET + nextMember);
+    if (!entity.getReservationQueue().isEmpty()) {
+      borrowBook(bookId, nextMember);
+    }
+    return ResultWithNext.success(nextMember);
   }
       
   public Result reserveBook(String bookId, String memberId) {
