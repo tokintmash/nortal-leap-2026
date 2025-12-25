@@ -152,6 +152,19 @@ public class LibraryService {
     return Result.success();
   }
 
+  // public boolean canMemberBorrow(String memberId) {
+  //   if (!memberRepository.existsById(memberId)) {
+  //     return false;
+  //   }
+  //   int active = 0;
+  //   for (Book book : bookRepository.findAll()) {
+  //     if (memberId.equals(book.getLoanedTo())) {
+  //       active++;
+  //     }
+  //   }
+  //   return active < MAX_LOANS;
+  // }
+
   public boolean canMemberBorrow(String memberId) {
     if (!memberRepository.existsById(memberId)) {
       return false;
