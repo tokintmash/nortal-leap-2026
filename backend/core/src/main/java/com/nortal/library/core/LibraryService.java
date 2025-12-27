@@ -128,12 +128,12 @@ public class LibraryService {
       System.out.println(ANSI_YELLOW + "queue empty, calling borrowBook" + ANSI_RESET + entity.getReservationQueue());
       return borrowBook(bookId, memberId);
     }
-
+    
     System.out.println(ANSI_YELLOW + "Reservation queue from reserve: " + ANSI_RESET + entity.getReservationQueue());
     bookRepository.save(entity);
     return Result.success();
   }
-
+  
   public Result cancelReservation(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
@@ -142,7 +142,7 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
     }
-
+    
     Book entity = book.get();
     boolean removed = entity.getReservationQueue().remove(memberId);
     if (!removed) {
@@ -151,17 +151,17 @@ public class LibraryService {
     bookRepository.save(entity);
     return Result.success();
   }
-
+  
   // public boolean canMemberBorrow(String memberId) {
-  //   if (!memberRepository.existsById(memberId)) {
-  //     return false;
-  //   }
-  //   int active = 0;
-  //   for (Book book : bookRepository.findAll()) {
-  //     if (memberId.equals(book.getLoanedTo())) {
-  //       active++;
-  //     }
-  //   }
+    //   if (!memberRepository.existsById(memberId)) {
+      //     return false;
+      //   }
+      //   int active = 0;
+      //   for (Book book : bookRepository.findAll()) {
+        //     if (memberId.equals(book.getLoanedTo())) {
+          //       active++;
+          //     }
+          //   }
   //   return active < MAX_LOANS;
   // }
 
@@ -169,13 +169,8 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return false;
     }
-    int active = 0;
-    for (Book book : bookRepository.findAll()) {
-      if (memberId.equals(book.getLoanedTo())) {
-        active++;
-      }
-    }
-    return active < MAX_LOANS;
+    List<Book> borrowList = bookRepository.findByLoanedTo(memberId);
+    return borrowList.size() < MAX_LOANS;
   }
 
   public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
@@ -191,6 +186,20 @@ public class LibraryService {
                     || (availableOnly ? b.getLoanedTo() == null : b.getLoanedTo() != null))
         .toList();
   }
+  
+  // public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
+  //   return bookRepository.findAll().stream()
+  //       .filter(
+  //           b ->
+  //               titleContains == null
+  //                   || b.getTitle().toLowerCase().contains(titleContains.toLowerCase()))
+  //       .filter(b -> loanedTo == null || loanedTo.equals(b.getLoanedTo()))
+  //       .filter(
+  //           b ->
+  //               availableOnly == null
+  //                   || (availableOnly ? b.getLoanedTo() == null : b.getLoanedTo() != null))
+  //       .toList();
+  // }
 
   public List<Book> overdueBooks(LocalDate today) {
     return bookRepository.findAll().stream()
@@ -245,6 +254,10 @@ public class LibraryService {
 
   public List<Book> allBooks() {
     return bookRepository.findAll();
+  }
+
+  public List<Book> findByLoanedTo(String loanedTo) {
+    return bookRepository.findByLoanedTo(loanedTo);
   }
 
   public List<Member> allMembers() {
