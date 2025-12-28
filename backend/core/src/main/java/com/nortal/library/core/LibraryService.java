@@ -94,7 +94,6 @@ public class LibraryService {
   }
 
   public Result reserveBook(String bookId, String memberId) {
-    System.out.println(ANSI_YELLOW + "reserveBook called:" + ANSI_RESET + bookId + memberId);
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
       return Result.failure("BOOK_NOT_FOUND");
@@ -106,17 +105,11 @@ public class LibraryService {
     Book entity = book.get();
     List<String> queue = entity.getReservationQueue();
     String borrowerId = book.get().getLoanedTo();
-
-    System.out.println(ANSI_YELLOW + "borrowerId:" + ANSI_RESET + borrowerId);
-    System.out.println(ANSI_YELLOW + "bookId:" + ANSI_RESET + book);
-    System.out.println(ANSI_YELLOW + "memberId:" + ANSI_RESET + memberId);
     
     if (!queue.isEmpty()) {
       if (borrowerId.equals(memberId)) {
-        System.out.println(ANSI_YELLOW + "borrowerId.equals(memberId)" + ANSI_RESET + queue);
         return Result.failure("ALREADY_LOANED");
       } else if (queue.contains(memberId)) {
-        System.out.println(ANSI_YELLOW + "member already in queue" + ANSI_RESET + queue);
         return Result.failure("ALREADY_RESERVED");
       } else if (!queue.contains(memberId)) {
         entity.getReservationQueue().add(memberId);
@@ -127,7 +120,6 @@ public class LibraryService {
     
     if (queue.isEmpty()) {
       if (borrowerId != null && borrowerId.equals(memberId)) {
-        System.out.println(ANSI_YELLOW + "borrowerId.equals(memberId)" + ANSI_RESET + queue);
         return Result.failure("ALREADY_LOANED");
       } else if (borrowerId != null && !borrowerId.equals(memberId)) {
         entity.getReservationQueue().add(memberId);
