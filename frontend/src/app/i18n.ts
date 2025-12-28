@@ -64,6 +64,7 @@ export const translations = {
     BOOK_IN_USE: 'Book cannot be deleted while loaned',
     NOT_RESERVED: 'Reservation not found',
     NOT_LOANED: 'Book is not currently loaned',
+    NOT_BORROWER: 'Only borrower can return a book',
   },
 };
 
