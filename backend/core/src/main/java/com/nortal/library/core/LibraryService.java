@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 public class LibraryService {
   public static final String ANSI_RESET = "\u001B[0m";
   public static final String ANSI_YELLOW = "\u001B[33m";
@@ -41,16 +40,22 @@ public class LibraryService {
     }
 
     Book entity = book.get();
-        
-    if (!entity.getReservationQueue().isEmpty() && !entity.getReservationQueue().get(0).equals(memberId)) {
+
+    if (!entity.getReservationQueue().isEmpty()
+        && !entity.getReservationQueue().get(0).equals(memberId)) {
       System.out.println(ANSI_YELLOW + "queue is not empty");
-      System.out.println(ANSI_YELLOW + "member is not first in queue" + entity.getReservationQueue().get(0));
+      System.out.println(
+          ANSI_YELLOW + "member is not first in queue" + entity.getReservationQueue().get(0));
       return Result.failure("BOOK_RESERVED");
-    } else if (!entity.getReservationQueue().isEmpty() && entity.getReservationQueue().get(0).equals(memberId)) {
-      System.out.println(ANSI_YELLOW + "first in queue, removing from queue:" + entity.getReservationQueue().get(0));
+    } else if (!entity.getReservationQueue().isEmpty()
+        && entity.getReservationQueue().get(0).equals(memberId)) {
+      System.out.println(
+          ANSI_YELLOW
+              + "first in queue, removing from queue:"
+              + entity.getReservationQueue().get(0));
       cancelReservation(bookId, memberId);
     }
-        
+
     entity.setLoanedTo(memberId);
     entity.setDueDate(LocalDate.now().plusDays(DEFAULT_LOAN_DAYS));
     bookRepository.save(entity);
@@ -58,14 +63,23 @@ public class LibraryService {
   }
 
   void removeMemberFromAllQueues(String memberId) {
-    bookRepository.findAll().forEach(book -> {
-      book.getReservationQueue().remove(memberId);
-      bookRepository.save(book);
-    });
+    bookRepository
+        .findAll()
+        .forEach(
+            book -> {
+              book.getReservationQueue().remove(memberId);
+              bookRepository.save(book);
+            });
   }
-  
+
   public ResultWithNext returnBook(String bookId, String memberId) {
-    System.out.println(ANSI_YELLOW + "returnBook called for bookId: " + ANSI_RESET + bookId + ", memberId: " + memberId);
+    System.out.println(
+        ANSI_YELLOW
+            + "returnBook called for bookId: "
+            + ANSI_RESET
+            + bookId
+            + ", memberId: "
+            + memberId);
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
       return ResultWithNext.failure();
@@ -75,23 +89,34 @@ public class LibraryService {
 
     // TODO: add return constraint message
     if (!borrowerId.equals(memberId)) {
-      System.out.println(ANSI_YELLOW + "IDs not the same." + ANSI_RESET + book.get().getLoanedTo() + ", memberId: " + memberId);
+      System.out.println(
+          ANSI_YELLOW
+              + "IDs not the same."
+              + ANSI_RESET
+              + book.get().getLoanedTo()
+              + ", memberId: "
+              + memberId);
       return ResultWithNext.failure();
     } else if (borrowerId.equals(memberId)) {
-      System.out.println(ANSI_YELLOW + "IDs are same." + ANSI_RESET + book.get().getLoanedTo() + ", memberId: " + memberId);
+      System.out.println(
+          ANSI_YELLOW
+              + "IDs are same."
+              + ANSI_RESET
+              + book.get().getLoanedTo()
+              + ", memberId: "
+              + memberId);
     }
-
-    // System.out.println(ANSI_YELLOW + "Loaned to (from returnBOok): " + ANSI_RESET + book.get().getLoanedTo());
-    // System.out.println(ANSI_YELLOW + "Member (from returnBOok): " + ANSI_RESET + memberId);
-    
-    // memberRepository.existsById(memberId)
 
     Book entity = book.get();
     entity.setLoanedTo(null);
     entity.setDueDate(null);
     String nextMember =
         entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
-    System.out.println(ANSI_YELLOW + "Reservation queue from return: " + ANSI_RESET + entity.getReservationQueue());
+    System.out.println(
+        ANSI_YELLOW
+            + "Reservation queue from return: "
+            + ANSI_RESET
+            + entity.getReservationQueue());
     bookRepository.save(entity);
     System.out.println(ANSI_YELLOW + "nextMember from return: " + ANSI_RESET + nextMember);
     if (!entity.getReservationQueue().isEmpty()) {
@@ -99,7 +124,7 @@ public class LibraryService {
     }
     return ResultWithNext.success(nextMember);
   }
-      
+
   public Result reserveBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
@@ -108,28 +133,50 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
     }
-    
+
     Book entity = book.get();
     List<String> queue = entity.getReservationQueue();
 
     // TODO: add correct message for rejecting borrower's reserve
     if (!queue.isEmpty() && !queue.contains(memberId)) {
-      System.out.println(ANSI_YELLOW + "queue not empty, !contains member: " + ANSI_RESET + entity.getReservationQueue());
+      System.out.println(
+          ANSI_YELLOW
+              + "queue not empty, !contains member: "
+              + ANSI_RESET
+              + entity.getReservationQueue());
       entity.getReservationQueue().add(memberId);
     } else if (!queue.isEmpty() && entity.getReservationQueue().get(0).equals(memberId)) {
-      System.out.println(ANSI_YELLOW + "queue empty, member first in queue, calling borrowBook" + ANSI_RESET + entity.getReservationQueue());
-      return borrowBook(bookId, memberId);
-    }
-    
-    if (queue.isEmpty() && book.get().getLoanedTo() != null && !book.get().getLoanedTo().equals(memberId)) {
-    System.out.println(ANSI_YELLOW + "queue empty, not loaned to member: " + ANSI_RESET + entity.getReservationQueue());
-    entity.getReservationQueue().add(memberId);
-    } else if (queue.isEmpty()) {
-      System.out.println(ANSI_YELLOW + "queue empty, calling borrowBook" + ANSI_RESET + entity.getReservationQueue());
+      System.out.println(
+          ANSI_YELLOW
+              + "queue empty, member first in queue, calling borrowBook"
+              + ANSI_RESET
+              + entity.getReservationQueue());
       return borrowBook(bookId, memberId);
     }
 
-    System.out.println(ANSI_YELLOW + "Reservation queue from reserve: " + ANSI_RESET + entity.getReservationQueue());
+    if (queue.isEmpty()
+        && book.get().getLoanedTo() != null
+        && !book.get().getLoanedTo().equals(memberId)) {
+      System.out.println(
+          ANSI_YELLOW
+              + "queue empty, not loaned to member: "
+              + ANSI_RESET
+              + entity.getReservationQueue());
+      entity.getReservationQueue().add(memberId);
+    } else if (queue.isEmpty()) {
+      System.out.println(
+          ANSI_YELLOW
+              + "queue empty, calling borrowBook"
+              + ANSI_RESET
+              + entity.getReservationQueue());
+      return borrowBook(bookId, memberId);
+    }
+
+    System.out.println(
+        ANSI_YELLOW
+            + "Reservation queue from reserve: "
+            + ANSI_RESET
+            + entity.getReservationQueue());
     bookRepository.save(entity);
     return Result.success();
   }
@@ -156,16 +203,14 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return false;
     }
-    int active = 0;
-    for (Book book : bookRepository.findAll()) {
-      if (memberId.equals(book.getLoanedTo())) {
-        active++;
-      }
-    }
-    return active < MAX_LOANS;
+    // TODO: get number from sql
+    List<Book> borrowList = bookRepository.findByLoanedTo(memberId);
+    return borrowList.size() < MAX_LOANS;
   }
 
   public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
+    System.out.println(ANSI_YELLOW + "searchBooks called" + ANSI_RESET);
+
     return bookRepository.findAll().stream()
         .filter(
             b ->
@@ -232,6 +277,10 @@ public class LibraryService {
 
   public List<Book> allBooks() {
     return bookRepository.findAll();
+  }
+
+  public List<Book> findByLoanedTo(String loanedTo) {
+    return bookRepository.findByLoanedTo(loanedTo);
   }
 
   public List<Member> allMembers() {

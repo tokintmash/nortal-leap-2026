@@ -9,6 +9,8 @@ public interface BookRepository {
 
   List<Book> findAll();
 
+  List<Book> findByLoanedTo(String id);
+
   Book save(Book book);
 
   void delete(Book book);
