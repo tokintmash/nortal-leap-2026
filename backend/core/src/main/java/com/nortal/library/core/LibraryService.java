@@ -68,16 +68,14 @@ public class LibraryService {
   public ResultWithNext returnBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
-      return ResultWithNext.failure();
+      return ResultWithNext.failure("BOOK_NOT_FOUND");
     }
 
     String borrowerId = book.get().getLoanedTo();
 
     // TODO: add return constraint message
     if (!borrowerId.equals(memberId)) {
-      return ResultWithNext.failure();
-    } else if (borrowerId.equals(memberId)) {
-
+      return ResultWithNext.failure("NOT_BORROWER");
     }
 
     Book entity = book.get();
@@ -311,25 +309,15 @@ public class LibraryService {
     }
   }
 
-  public record ResultWithNext(boolean ok, String nextMemberId) {
+  public record ResultWithNext(boolean ok, String nextMemberId, String reason) {
     public static ResultWithNext success(String nextMemberId) {
-      return new ResultWithNext(true, nextMemberId);
+      return new ResultWithNext(true, nextMemberId, null);
     }
 
-    public static ResultWithNext failure() {
-      return new ResultWithNext(false, null);
+    public static ResultWithNext failure(String reason) {
+      return new ResultWithNext(false, null, reason);
     }
   }
-
-  //   public record ResultWithNext(boolean ok, String nextMemberId, String reason) {
-  //   public static ResultWithNext success(String nextMemberId) {
-  //     return new ResultWithNext(true, nextMemberId, null);
-  //   }
-
-  //   public static ResultWithNext failure(String reason) {
-  //     return new ResultWithNext(false, null, reason);
-  //   }
-  // }
 
   public record MemberSummary(
       boolean ok, String reason, List<Book> loans, List<ReservationPosition> reservations) {}
