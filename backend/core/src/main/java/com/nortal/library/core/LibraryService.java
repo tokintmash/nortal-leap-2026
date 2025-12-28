@@ -43,16 +43,9 @@ public class LibraryService {
 
     if (!entity.getReservationQueue().isEmpty()
         && !entity.getReservationQueue().get(0).equals(memberId)) {
-      System.out.println(ANSI_YELLOW + "queue is not empty");
-      System.out.println(
-          ANSI_YELLOW + "member is not first in queue" + entity.getReservationQueue().get(0));
       return Result.failure("BOOK_RESERVED");
     } else if (!entity.getReservationQueue().isEmpty()
         && entity.getReservationQueue().get(0).equals(memberId)) {
-      System.out.println(
-          ANSI_YELLOW
-              + "first in queue, removing from queue:"
-              + entity.getReservationQueue().get(0));
       cancelReservation(bookId, memberId);
     }
 
@@ -73,13 +66,6 @@ public class LibraryService {
   }
 
   public ResultWithNext returnBook(String bookId, String memberId) {
-    System.out.println(
-        ANSI_YELLOW
-            + "returnBook called for bookId: "
-            + ANSI_RESET
-            + bookId
-            + ", memberId: "
-            + memberId);
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
       return ResultWithNext.failure();
@@ -89,22 +75,9 @@ public class LibraryService {
 
     // TODO: add return constraint message
     if (!borrowerId.equals(memberId)) {
-      System.out.println(
-          ANSI_YELLOW
-              + "IDs not the same."
-              + ANSI_RESET
-              + book.get().getLoanedTo()
-              + ", memberId: "
-              + memberId);
       return ResultWithNext.failure();
     } else if (borrowerId.equals(memberId)) {
-      System.out.println(
-          ANSI_YELLOW
-              + "IDs are same."
-              + ANSI_RESET
-              + book.get().getLoanedTo()
-              + ", memberId: "
-              + memberId);
+
     }
 
     Book entity = book.get();
@@ -112,13 +85,8 @@ public class LibraryService {
     entity.setDueDate(null);
     String nextMember =
         entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
-    System.out.println(
-        ANSI_YELLOW
-            + "Reservation queue from return: "
-            + ANSI_RESET
-            + entity.getReservationQueue());
+
     bookRepository.save(entity);
-    System.out.println(ANSI_YELLOW + "nextMember from return: " + ANSI_RESET + nextMember);
     if (!entity.getReservationQueue().isEmpty()) {
       borrowBook(bookId, nextMember);
     }
@@ -136,47 +104,30 @@ public class LibraryService {
 
     Book entity = book.get();
     List<String> queue = entity.getReservationQueue();
-
-    // TODO: add correct message for rejecting borrower's reserve
-    if (!queue.isEmpty() && !queue.contains(memberId)) {
-      System.out.println(
-          ANSI_YELLOW
-              + "queue not empty, !contains member: "
-              + ANSI_RESET
-              + entity.getReservationQueue());
-      entity.getReservationQueue().add(memberId);
-    } else if (!queue.isEmpty() && entity.getReservationQueue().get(0).equals(memberId)) {
-      System.out.println(
-          ANSI_YELLOW
-              + "queue empty, member first in queue, calling borrowBook"
-              + ANSI_RESET
-              + entity.getReservationQueue());
-      return borrowBook(bookId, memberId);
+    String borrowerId = book.get().getLoanedTo();
+    
+    if (!queue.isEmpty()) {
+      if (borrowerId.equals(memberId)) {
+        return Result.failure("ALREADY_LOANED");
+      } else if (queue.contains(memberId)) {
+        return Result.failure("ALREADY_RESERVED");
+      } else if (!queue.contains(memberId)) {
+        entity.getReservationQueue().add(memberId);
+      } else if (entity.getReservationQueue().get(0).equals(memberId)) {
+        return borrowBook(bookId, memberId);
+      }
+    }
+    
+    if (queue.isEmpty()) {
+      if (borrowerId != null && borrowerId.equals(memberId)) {
+        return Result.failure("ALREADY_LOANED");
+      } else if (borrowerId != null && !borrowerId.equals(memberId)) {
+        entity.getReservationQueue().add(memberId);
+      } else {
+        return borrowBook(bookId, memberId);
+      }
     }
 
-    if (queue.isEmpty()
-        && book.get().getLoanedTo() != null
-        && !book.get().getLoanedTo().equals(memberId)) {
-      System.out.println(
-          ANSI_YELLOW
-              + "queue empty, not loaned to member: "
-              + ANSI_RESET
-              + entity.getReservationQueue());
-      entity.getReservationQueue().add(memberId);
-    } else if (queue.isEmpty()) {
-      System.out.println(
-          ANSI_YELLOW
-              + "queue empty, calling borrowBook"
-              + ANSI_RESET
-              + entity.getReservationQueue());
-      return borrowBook(bookId, memberId);
-    }
-
-    System.out.println(
-        ANSI_YELLOW
-            + "Reservation queue from reserve: "
-            + ANSI_RESET
-            + entity.getReservationQueue());
     bookRepository.save(entity);
     return Result.success();
   }
@@ -209,8 +160,6 @@ public class LibraryService {
   }
 
   public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
-    System.out.println(ANSI_YELLOW + "searchBooks called" + ANSI_RESET);
-
     return bookRepository.findAll().stream()
         .filter(
             b ->
