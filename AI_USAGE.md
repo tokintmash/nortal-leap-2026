@@ -5,3 +5,6 @@
 - I first searched internet and when stuck, asked AI. For example, after spent an hour or so wondering why "if (!this == that) {}" does not work.
 - Discussed the approach to remove deleted members from queues. Ended up using the exact thing it suggested.
 - Let AI explain about Spring Boot and SQL. Spring Boot in new to me.
+
+Assumptions
+- Assuming that the assignment requires the book to be automatically loaned to the next member in queue, if it exists.

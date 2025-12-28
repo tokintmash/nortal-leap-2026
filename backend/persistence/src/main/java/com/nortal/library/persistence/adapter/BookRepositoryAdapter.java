@@ -16,8 +16,6 @@ public class BookRepositoryAdapter implements BookRepository {
     this.jpaRepository = jpaRepository;
   }
 
-  @Query(SELECT b.)
-
   @Override
   public Optional<Book> findById(String id) {
     return jpaRepository.findById(id);
