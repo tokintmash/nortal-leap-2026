@@ -76,15 +76,15 @@ public class LibraryService {
     return Result.success();
   }
 
-  // void removeMemberFromAllQueues(String memberId) {
-  //   bookRepository
-  //       .findAll()
-  //       .forEach(
-  //           book -> {
-  //             book.getReservationQueue().remove(memberId);
-  //             bookRepository.save(book);
-  //           });
-  // }
+  void removeMemberFromAllQueues(String memberId) {
+    bookRepository
+        .findAll()
+        .forEach(
+            book -> {
+              book.getReservationQueue().remove(memberId);
+              bookRepository.save(book);
+            });
+  }
 
   public ResultWithNext returnBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
@@ -103,11 +103,17 @@ public class LibraryService {
     entity.setLoanedTo(null);
     entity.setDueDate(null);
     String nextMember = queue.isEmpty() ? null : queue.get(0);
+    
+    while (!queue.isEmpty()) {
+      if (canMemberBorrow(nextMember)) {
+        setBookLoaned(bookId, nextMember);
+        break;
+      } else {
+        queue.removeFirst();
+      }
+    }
 
     bookRepository.save(entity);
-    if (!queue.isEmpty()) {
-      setBookLoaned(bookId, nextMember);
-    }
     return ResultWithNext.success(nextMember);
   }
 
@@ -310,8 +316,8 @@ public class LibraryService {
     }
 
     memberRepository.delete(existing.get());
-    // removeMemberFromAllQueues(id);
-    bookRepository.removeFromAllQueues(id);
+    removeMemberFromAllQueues(id);
+    // bookRepository.removeFromAllQueues(id);
     return Result.success();
   }
 
