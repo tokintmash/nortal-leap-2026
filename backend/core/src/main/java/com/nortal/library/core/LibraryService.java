@@ -47,7 +47,7 @@ public class LibraryService {
     if (borrowerId != null && borrowerId.equals(memberId)) {
       return Result.failure("ALREADY_LOANED");
     }
-    
+
     if (!queue.isEmpty()) {
       String firstInQueue = queue.get(0);
       if (!firstInQueue.equals(memberId)) {
@@ -55,7 +55,7 @@ public class LibraryService {
       } else if (firstInQueue.equals(memberId)) {
         cancelReservation(bookId, memberId);
       }
-    }  
+    }
 
     entity.setLoanedTo(memberId);
     entity.setDueDate(LocalDate.now().plusDays(DEFAULT_LOAN_DAYS));
@@ -63,15 +63,15 @@ public class LibraryService {
     return Result.success();
   }
 
-  void removeMemberFromAllQueues(String memberId) {
-    bookRepository
-        .findAll()
-        .forEach(
-            book -> {
-              book.getReservationQueue().remove(memberId);
-              bookRepository.save(book);
-            });
-  }
+  // void removeMemberFromAllQueues(String memberId) {
+  //   bookRepository
+  //       .findAll()
+  //       .forEach(
+  //           book -> {
+  //             book.getReservationQueue().remove(memberId);
+  //             bookRepository.save(book);
+  //           });
+  // }
 
   public ResultWithNext returnBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
@@ -110,7 +110,7 @@ public class LibraryService {
     Book entity = book.get();
     List<String> queue = entity.getReservationQueue();
     String borrowerId = book.get().getLoanedTo();
-    
+
     if (!queue.isEmpty()) {
       if (borrowerId.equals(memberId)) {
         return Result.failure("ALREADY_LOANED");
@@ -122,7 +122,7 @@ public class LibraryService {
         return borrowBook(bookId, memberId);
       }
     }
-    
+
     if (queue.isEmpty()) {
       if (borrowerId != null && borrowerId.equals(memberId)) {
         return Result.failure("ALREADY_LOANED");
@@ -297,7 +297,8 @@ public class LibraryService {
     }
 
     memberRepository.delete(existing.get());
-    removeMemberFromAllQueues(id);
+    // removeMemberFromAllQueues(id);
+    bookRepository.removeFromAllQueues(id);
     return Result.success();
   }
 

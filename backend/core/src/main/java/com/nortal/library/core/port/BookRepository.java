@@ -11,6 +11,8 @@ public interface BookRepository {
 
   long countByLoanedTo(String memberId);
 
+  void removeFromAllQueues(String memberId);
+
   Book save(Book book);
 
   void delete(Book book);
