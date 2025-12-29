@@ -10,4 +10,5 @@
 Assumptions
 - Assuming that the assignment requires the book to be automatically loaned to the next member in queue, if it exists.
 - Assuming success responses are conseidered fine in their current form: "Action completed->mN"
+- Assuming adding a failure message to returnBook() doesn't count as changing API surface.
 - Assuming JWT Auth is left in README to see who will deal with it. Decided to make sure required is done first.
