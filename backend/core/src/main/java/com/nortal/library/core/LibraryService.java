@@ -50,11 +50,27 @@ public class LibraryService {
       if (!firstInQueue.equals(memberId)) {
         return Result.failure("BOOK_RESERVED");
       } else if (firstInQueue.equals(memberId)) {
-        cancelReservation(bookId, memberId);
+        entity.getReservationQueue().remove(memberId);
       }
     }
 
+    return setBookLoaned(bookId, memberId);
+  }
+
+  public Result setBookLoaned(String bookId, String memberId) {
+    Optional<Book> book = bookRepository.findById(bookId);
+    Book entity = book.get();
+    List<String> queue = entity.getReservationQueue();
+
     entity.setLoanedTo(memberId);
+
+    if (!queue.isEmpty()) {
+      boolean removed = entity.getReservationQueue().remove(memberId);
+      if (!removed) {
+        return Result.failure("NOT_RESERVED");
+      }
+    }
+
     entity.setDueDate(LocalDate.now().plusDays(DEFAULT_LOAN_DAYS));
     bookRepository.save(entity);
     return Result.success();
@@ -90,7 +106,7 @@ public class LibraryService {
 
     bookRepository.save(entity);
     if (!queue.isEmpty()) {
-      borrowBook(bookId, nextMember);
+      setBookLoaned(bookId, nextMember);
     }
     return ResultWithNext.success(nextMember);
   }
@@ -116,7 +132,7 @@ public class LibraryService {
       } else if (!queue.contains(memberId)) {
         queue.add(memberId);
       } else if (entity.getReservationQueue().get(0).equals(memberId)) {
-        return borrowBook(bookId, memberId);
+        return setBookLoaned(bookId, memberId);
       }
     }
 
@@ -126,7 +142,7 @@ public class LibraryService {
       } else if (borrowerId != null && !borrowerId.equals(memberId)) {
         queue.add(memberId);
       } else {
-        return borrowBook(bookId, memberId);
+        return setBookLoaned(bookId, memberId);
       }
     }
 
