@@ -9,7 +9,7 @@ public interface BookRepository {
 
   List<Book> findAll();
 
-  List<Book> findByLoanedTo(String id);
+  long countByLoanedTo(String memberId);
 
   Book save(Book book);
 

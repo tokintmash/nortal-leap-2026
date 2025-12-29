@@ -27,8 +27,8 @@ public class BookRepositoryAdapter implements BookRepository {
   }
 
   @Override
-  public List<Book> findByLoanedTo(String loanedTo) {
-    return jpaRepository.findByLoanedTo(loanedTo);
+  public long countByLoanedTo(String loanedTo) {
+    return jpaRepository.countByLoanedTo(loanedTo);
   }
 
   @Override

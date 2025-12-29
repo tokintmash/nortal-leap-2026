@@ -26,11 +26,17 @@ public class LibraryService {
 
   public Result borrowBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
+    Book entity = book.get();
+    String borrowerId = entity.getLoanedTo();
+    List<String> queue = entity.getReservationQueue();
+
     if (book.isEmpty()) {
       return Result.failure("BOOK_NOT_FOUND");
     }
-    if (book.get().getLoanedTo() != null) {
+    if (borrowerId != null && !borrowerId.equals(memberId)) {
       return Result.failure("BOOK_LOANED");
+    } else if (borrowerId != null && borrowerId.equals(memberId)) {
+      return Result.failure("ALREADY_LOANED");
     }
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
@@ -38,16 +44,18 @@ public class LibraryService {
     if (!canMemberBorrow(memberId)) {
       return Result.failure("BORROW_LIMIT");
     }
-
-    Book entity = book.get();
-
-    if (!entity.getReservationQueue().isEmpty()
-        && !entity.getReservationQueue().get(0).equals(memberId)) {
-      return Result.failure("BOOK_RESERVED");
-    } else if (!entity.getReservationQueue().isEmpty()
-        && entity.getReservationQueue().get(0).equals(memberId)) {
-      cancelReservation(bookId, memberId);
+    if (borrowerId != null && borrowerId.equals(memberId)) {
+      return Result.failure("ALREADY_LOANED");
     }
+    
+    if (!queue.isEmpty()) {
+      String firstInQueue = queue.get(0);
+      if (!firstInQueue.equals(memberId)) {
+        return Result.failure("BOOK_RESERVED");
+      } else if (firstInQueue.equals(memberId)) {
+        cancelReservation(bookId, memberId);
+      }
+    }  
 
     entity.setLoanedTo(memberId);
     entity.setDueDate(LocalDate.now().plusDays(DEFAULT_LOAN_DAYS));
@@ -73,7 +81,6 @@ public class LibraryService {
 
     String borrowerId = book.get().getLoanedTo();
 
-    // TODO: add return constraint message
     if (!borrowerId.equals(memberId)) {
       return ResultWithNext.failure("NOT_BORROWER");
     }
@@ -152,9 +159,8 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return false;
     }
-    // TODO: get number from sql
-    List<Book> borrowList = bookRepository.findByLoanedTo(memberId);
-    return borrowList.size() < MAX_LOANS;
+    long booksBorrowed = bookRepository.countByLoanedTo(memberId);
+    return booksBorrowed < MAX_LOANS;
   }
 
   public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
@@ -224,10 +230,6 @@ public class LibraryService {
 
   public List<Book> allBooks() {
     return bookRepository.findAll();
-  }
-
-  public List<Book> findByLoanedTo(String loanedTo) {
-    return bookRepository.findByLoanedTo(loanedTo);
   }
 
   public List<Member> allMembers() {
