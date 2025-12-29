@@ -50,3 +50,5 @@ internal/
 backend/hidden-tests/
 .github/copilot-instructions.md
 AGENT.md
+private_key_pkcs8.pem
+public_key.pem

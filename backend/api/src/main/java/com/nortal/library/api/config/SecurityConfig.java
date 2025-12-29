@@ -78,13 +78,18 @@ public class SecurityConfig {
   private static final String PUBLIC_KEY_PEM =
       """
             -----BEGIN PUBLIC KEY-----
-            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwjpnvCuGBgRov2I2YBff
-            V3D1GqZLOX/74HzxbMGba5IVpAComYzdS0+4jcVu/0xIikN5o+lFOc+L3eI4S8xo
-            ca5JTWmLLyYCkj429/lDQhdWkUCnH2swKFeFZhhpWwsTzEaZRwUwNyiJaX8OmnW+
-            tlc+Rdn/SIB39OX0n4VpgCrj7r0lkfAf6kzSCsrxChIMjix3vz8u6azpIMLfpbHj
-            mWEaTdcETMQlh6QYZDHeosXEzpcaHUBGW1Kd57Lqs+9eTv7mO+wtGlqb4Y4NaPON
-            tD14y8VVAJ8v8b7sRpmke6wJpV6pVPGvVblVzX2WfyI3W92/bbV6uMQGUuL6QqFr
-            hwIDAQAB
+            MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvcnu34w+EqyoQCaZV31j
+            jZfI9o1QhggGEkyi6bdhchRsWt8qJ1D7SKxDy8Iq+xA5ZP1/uXntGYiVkIY4nGeP
+            ka2RMAxNhAyxz5VyjusgdCKkAjg5PDO/6pFWVuNIdFwWJKXhcOnII+Zz/C2/STZW
+            etmBjUMhMs9NqtUVOiYo+PPIoBHCCTFuWQSVbwaDP1QTB/TJM6/I6eX9mQWLSSAQ
+            U7TWgCbx7a7T3PPRjsB2du8cS0nNaTzFjA89MxOEN6u8v9WatIFxRkKRC88cDzTO
+            NZMpuIiqhsEzEE+P1XnPn3km1kFmwBV02eEpbOXGmWPfZcWTDoWA2dvTVDyajkSF
+            uNd+OGTDAjOcaA1dt+K7YAAgCV0BU/1smsqcwcf8zERhmRiC6nMezD9AQPtzQDGV
+            oxy6bGgvBBi+z8JgOBo2HTkXgKZcWCbaNLZ8KGZeysrmVqeumeQNCdvmDaqacgQW
+            uq/XjDipraX0459gUfokWSkamHqufKW+2c7uzhtJ8Rtl9Gi5MfusDmgAe7wC1yU7
+            AKUfJQOcfoeI79PlgDue845FYStIygrGSAcLYJbLERVELhxXKBp0EjwpuIo3tHEr
+            mUnNLF2/tNb1vyHq8xcw632XkEx+BWfuxAhYnxPt6Ry1+ft1sscO+Zzu+YIK48DT
+            rAcTck17OXADUxkcFjx6HYECAwEAAQ==
             -----END PUBLIC KEY-----
             """;
 }

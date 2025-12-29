@@ -76,12 +76,12 @@ export class LibraryApiService {
   private async post(path: string, payload: Record<string, string>): Promise<ActionResult> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer <paste token here>' },
       body: JSON.stringify(payload),
     });
     return res.json();
   }
-
+  
   private async put(path: string, payload: Record<string, string>): Promise<ActionResult> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'PUT',
@@ -90,7 +90,7 @@ export class LibraryApiService {
     });
     return res.json();
   }
-
+  
   private async delete(path: string, payload: Record<string, string>): Promise<ActionResult> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'DELETE',
