@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class LibraryService {
-  public static final String ANSI_RESET = "\u001B[0m";
-  public static final String ANSI_YELLOW = "\u001B[33m";
-
   private static final int MAX_LOANS = 5;
   private static final int DEFAULT_LOAN_DAYS = 14;
 
