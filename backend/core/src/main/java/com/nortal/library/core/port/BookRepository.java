@@ -9,7 +9,9 @@ public interface BookRepository {
 
   List<Book> findAll();
 
-  List<Book> findByLoanedTo(String id);
+  long countByLoanedTo(String memberId);
+
+  void removeFromAllQueues(String memberId);
 
   Book save(Book book);
 

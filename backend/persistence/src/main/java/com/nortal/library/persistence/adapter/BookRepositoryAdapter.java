@@ -3,6 +3,7 @@ package com.nortal.library.persistence.adapter;
 import com.nortal.library.core.domain.Book;
 import com.nortal.library.core.port.BookRepository;
 import com.nortal.library.persistence.jpa.JpaBookRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -27,8 +28,8 @@ public class BookRepositoryAdapter implements BookRepository {
   }
 
   @Override
-  public List<Book> findByLoanedTo(String loanedTo) {
-    return jpaRepository.findByLoanedTo(loanedTo);
+  public long countByLoanedTo(String loanedTo) {
+    return jpaRepository.countByLoanedTo(loanedTo);
   }
 
   @Override
@@ -44,5 +45,11 @@ public class BookRepositoryAdapter implements BookRepository {
   @Override
   public boolean existsById(String id) {
     return jpaRepository.existsById(id);
+  }
+
+  @Override
+  @Transactional
+  public void removeFromAllQueues(String memberId) {
+    jpaRepository.removeFromAllQueues(memberId);
   }
 }

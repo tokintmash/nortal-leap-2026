@@ -1,12 +1,12 @@
 # AI Usage
 
-- Since basically no prior experience with Java (my only backend-experience is with Go), I used AI for helping me analyze the assignment and readmes and figure out where the main functionality is located for this assignment.
-- Generated the instruction file text for AI plugin. I set it not to modify files and help me learn instead of simply giving me code.
-- I first searched internet and when stuck, asked AI. For example, after spent an hour or so wondering why "if (!this == that) {}" does not work.
-- Discussed the approach to remove deleted members from queues. Ended up using the exact thing it suggested.
-- Let AI explain about Spring Boot and SQL. Spring Boot in new to me.
-- Let AI explain about JWT 
+- Since basically no prior experience with Java (my only backend-experience is with Go from kood/Jõhvi), I used AI for helping me analyze the assignment and readmes and figure out where the main functionality is located for this assignment.
+- In the AI instructions files I set that AI should help me learn and not change files.
+- Ended up using it quite a bit, but used regular internet search as much.
+- Removing deleted member from Queue was first done with AI (currently commented out: removeMemberFromAllQueues()), I then realized it's a loop and refactored it with the help of AI.
 
 Assumptions
 - Assuming that the assignment requires the book to be automatically loaned to the next member in queue, if it exists.
-- Assuming JWT Auth is left in README to see who will deal with it. Decided to make sure required is done first.
+- Assuming success responses are conseidered fine in their current form: "Action completed->mN"
+- Assuming adding a failure message to returnBook() doesn't count as changing API surface.
+- Assuming JWT Auth is left in README to see who will deal with it (i.e. it's probably a bonus). Decided to make sure required is done first.

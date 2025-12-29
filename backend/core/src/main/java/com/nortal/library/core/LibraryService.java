@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class LibraryService {
-  public static final String ANSI_RESET = "\u001B[0m";
-  public static final String ANSI_YELLOW = "\u001B[33m";
-
   private static final int MAX_LOANS = 5;
   private static final int DEFAULT_LOAN_DAYS = 14;
 
@@ -26,11 +23,17 @@ public class LibraryService {
 
   public Result borrowBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
+    Book entity = book.get();
+    String borrowerId = entity.getLoanedTo();
+    List<String> queue = entity.getReservationQueue();
+
     if (book.isEmpty()) {
       return Result.failure("BOOK_NOT_FOUND");
     }
-    if (book.get().getLoanedTo() != null) {
+    if (borrowerId != null && !borrowerId.equals(memberId)) {
       return Result.failure("BOOK_LOANED");
+    } else if (borrowerId != null && borrowerId.equals(memberId)) {
+      return Result.failure("ALREADY_LOANED");
     }
     if (!memberRepository.existsById(memberId)) {
       return Result.failure("MEMBER_NOT_FOUND");
@@ -38,15 +41,17 @@ public class LibraryService {
     if (!canMemberBorrow(memberId)) {
       return Result.failure("BORROW_LIMIT");
     }
+    if (borrowerId != null && borrowerId.equals(memberId)) {
+      return Result.failure("ALREADY_LOANED");
+    }
 
-    Book entity = book.get();
-
-    if (!entity.getReservationQueue().isEmpty()
-        && !entity.getReservationQueue().get(0).equals(memberId)) {
-      return Result.failure("BOOK_RESERVED");
-    } else if (!entity.getReservationQueue().isEmpty()
-        && entity.getReservationQueue().get(0).equals(memberId)) {
-      cancelReservation(bookId, memberId);
+    if (!queue.isEmpty()) {
+      String firstInQueue = queue.get(0);
+      if (!firstInQueue.equals(memberId)) {
+        return Result.failure("BOOK_RESERVED");
+      } else if (firstInQueue.equals(memberId)) {
+        cancelReservation(bookId, memberId);
+      }
     }
 
     entity.setLoanedTo(memberId);
@@ -55,39 +60,36 @@ public class LibraryService {
     return Result.success();
   }
 
-  void removeMemberFromAllQueues(String memberId) {
-    bookRepository
-        .findAll()
-        .forEach(
-            book -> {
-              book.getReservationQueue().remove(memberId);
-              bookRepository.save(book);
-            });
-  }
+  // void removeMemberFromAllQueues(String memberId) {
+  //   bookRepository
+  //       .findAll()
+  //       .forEach(
+  //           book -> {
+  //             book.getReservationQueue().remove(memberId);
+  //             bookRepository.save(book);
+  //           });
+  // }
 
   public ResultWithNext returnBook(String bookId, String memberId) {
     Optional<Book> book = bookRepository.findById(bookId);
     if (book.isEmpty()) {
-      return ResultWithNext.failure();
+      return ResultWithNext.failure("BOOK_NOT_FOUND");
     }
 
     String borrowerId = book.get().getLoanedTo();
+    Book entity = book.get();
+    List<String> queue = entity.getReservationQueue();
 
-    // TODO: add return constraint message
     if (!borrowerId.equals(memberId)) {
-      return ResultWithNext.failure();
-    } else if (borrowerId.equals(memberId)) {
-
+      return ResultWithNext.failure("NOT_BORROWER");
     }
 
-    Book entity = book.get();
     entity.setLoanedTo(null);
     entity.setDueDate(null);
-    String nextMember =
-        entity.getReservationQueue().isEmpty() ? null : entity.getReservationQueue().get(0);
+    String nextMember = queue.isEmpty() ? null : queue.get(0);
 
     bookRepository.save(entity);
-    if (!entity.getReservationQueue().isEmpty()) {
+    if (!queue.isEmpty()) {
       borrowBook(bookId, nextMember);
     }
     return ResultWithNext.success(nextMember);
@@ -105,24 +107,24 @@ public class LibraryService {
     Book entity = book.get();
     List<String> queue = entity.getReservationQueue();
     String borrowerId = book.get().getLoanedTo();
-    
+
     if (!queue.isEmpty()) {
       if (borrowerId.equals(memberId)) {
         return Result.failure("ALREADY_LOANED");
       } else if (queue.contains(memberId)) {
         return Result.failure("ALREADY_RESERVED");
       } else if (!queue.contains(memberId)) {
-        entity.getReservationQueue().add(memberId);
+        queue.add(memberId);
       } else if (entity.getReservationQueue().get(0).equals(memberId)) {
         return borrowBook(bookId, memberId);
       }
     }
-    
+
     if (queue.isEmpty()) {
       if (borrowerId != null && borrowerId.equals(memberId)) {
         return Result.failure("ALREADY_LOANED");
       } else if (borrowerId != null && !borrowerId.equals(memberId)) {
-        entity.getReservationQueue().add(memberId);
+        queue.add(memberId);
       } else {
         return borrowBook(bookId, memberId);
       }
@@ -154,9 +156,8 @@ public class LibraryService {
     if (!memberRepository.existsById(memberId)) {
       return false;
     }
-    // TODO: get number from sql
-    List<Book> borrowList = bookRepository.findByLoanedTo(memberId);
-    return borrowList.size() < MAX_LOANS;
+    long booksBorrowed = bookRepository.countByLoanedTo(memberId);
+    return booksBorrowed < MAX_LOANS;
   }
 
   public List<Book> searchBooks(String titleContains, Boolean availableOnly, String loanedTo) {
@@ -228,10 +229,6 @@ public class LibraryService {
     return bookRepository.findAll();
   }
 
-  public List<Book> findByLoanedTo(String loanedTo) {
-    return bookRepository.findByLoanedTo(loanedTo);
-  }
-
   public List<Member> allMembers() {
     return memberRepository.findAll();
   }
@@ -297,7 +294,8 @@ public class LibraryService {
     }
 
     memberRepository.delete(existing.get());
-    removeMemberFromAllQueues(id);
+    // removeMemberFromAllQueues(id);
+    bookRepository.removeFromAllQueues(id);
     return Result.success();
   }
 
@@ -311,25 +309,15 @@ public class LibraryService {
     }
   }
 
-  public record ResultWithNext(boolean ok, String nextMemberId) {
+  public record ResultWithNext(boolean ok, String nextMemberId, String reason) {
     public static ResultWithNext success(String nextMemberId) {
-      return new ResultWithNext(true, nextMemberId);
+      return new ResultWithNext(true, nextMemberId, null);
     }
 
-    public static ResultWithNext failure() {
-      return new ResultWithNext(false, null);
+    public static ResultWithNext failure(String reason) {
+      return new ResultWithNext(false, null, reason);
     }
   }
-
-  //   public record ResultWithNext(boolean ok, String nextMemberId, String reason) {
-  //   public static ResultWithNext success(String nextMemberId) {
-  //     return new ResultWithNext(true, nextMemberId, null);
-  //   }
-
-  //   public static ResultWithNext failure(String reason) {
-  //     return new ResultWithNext(false, null, reason);
-  //   }
-  // }
 
   public record MemberSummary(
       boolean ok, String reason, List<Book> loans, List<ReservationPosition> reservations) {}
